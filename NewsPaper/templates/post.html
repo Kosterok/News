@@ -14,4 +14,16 @@
 Дата публикации: {{post.created_at|date:'d.m.y'}}
 <hr>
 {{post.text|censor}}
+<hr>
+<br>
+{% if post.post_type == 'PS' %}
+  <a href="{% url 'article_edit' post.pk %}" class = "btn btn-primary">Редактировать</a>
+{% elif post.post_type == 'NW' %}
+  <a href="{% url 'news_edit' post.pk %}" class = "btn btn-primary">Редактировать</a>
+{% endif %}
+{% if post.post_type == 'PS' %}
+  <a href="{% url 'article_delete' post.pk %}" class = "btn btn-danger">Удалить</a>
+{% elif post.post_type == 'NW' %}
+  <a href="{% url 'news_delete' post.pk %}" class = "btn btn-danger">Удалить</a>
+{% endif %}
 {% endblock content %}

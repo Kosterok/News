@@ -6,20 +6,22 @@ Posts
 {% endblock title %}
 
 {% block content %}
-   <h1>Все новости ({{paginator.count}})</h1>
-     <hr>
- <a href="/news/create" class = "btn btn-secondary">Добавить новость</a>
- <a href="/articles/create" class = "btn btn-secondary">Добавить статью</a>
-    <hr>
+   <h1>Найдено новостей: {{paginator.count}}</h1>
+   <form action="" method="get">
+       {{ filterset.form.as_p }}
+       <button type="submit" class = "btn btn-primary">Найти </button >
+       <a href="{% url 'post_search' %}" class="btn btn-danger">Сбросить</a>
+   </form>
+   <hr>
    {% if posts %}
           {% for post in posts %}
-            <h3>{{ post.get_post_type_display }} <br>{{post.title|censor}}</h3>
+            <h3>{{post.title|censor}}</h3>
             Дата публикации: {{post.created_at|date:'d.m.y'}}
             <br>
             {{post.text|truncatewords:50|censor }}
             <br>
             <br>
-           <a href="{{ post.get_absolute_url }}" class = "btn btn-primary">Читать полностью</a>
+            <a href="{{ post.get_absolute_url }}" class = "btn btn-primary">Читать полностью</a>
             <hr>
            {% endfor %}
 
