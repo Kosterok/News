@@ -1,12 +1,20 @@
+from django.contrib import admin
 from django.urls import path
+from django.urls import include
 from .views import (PostsList, PostDetail, PostSearch,
                     ArticlesCreate, ArticleUpdate, ArticleDelete,
                     NewsCreate, NewsUpdate, NewsDelete,
                     )
+from .views import IndexView, upgrade_me
+from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', PostsList.as_view(), name='posts'),
-    # списки (если нужны)
+    path('accounts/', include('allauth.urls')),
+    path('accounts/profile/', IndexView.as_view(), name='profile'),
+    path('sign/upgrade/', upgrade_me, name='become_author'),
+
     path('articles/', PostsList.as_view(post_type='PS'), name='article_list'),
     path('news/', PostsList.as_view(post_type='NW'), name='news_list'),
 

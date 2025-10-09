@@ -1,0 +1,21 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% block content %}
+<h1>Профиль пользователя</h1>
+
+<div class="profile-info">
+    <p>Имя: {{ user.first_name }}</p>
+    <p>Фамилия: {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+    
+{% if is_not_author %}
+  <form action="{% url 'become_author' %}" method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit">Стать автором</button>
+  </form>
+{% endif %}
+<a href="/accounts/logout" class = "btn btn-danger">Выйти</a>
+</div>
+
+{% endblock %}

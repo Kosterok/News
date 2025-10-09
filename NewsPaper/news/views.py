@@ -3,6 +3,13 @@ from .models import Post
 from .filters import PostFilter
 from .forms import PostForm
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 class PostTypeMixin:
     post_type = None
@@ -26,7 +33,8 @@ class PostDetail(PostTypeMixin, DetailView):
     # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'post'
 
-class PostCreate(CreateView):
+class PostCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('news.add_post',)
     form_class = PostForm
     model = Post
     template_name = 'post_edit.html'
@@ -37,30 +45,36 @@ class PostCreate(CreateView):
         post.post_type = self.post_type
         return super().form_valid(form)
 
-class ArticlesCreate(PostCreate):
+class ArticlesCreate(LoginRequiredMixin, PostCreate):
+
     post_type = 'PS'
 
-class ArticleUpdate(UpdateView):
+class ArticleUpdate(LoginRequiredMixin,PermissionRequiredMixin, UpdateView):
+    permission_required = ('news.change_post',)
     model = Post
     form_class = PostForm
     template_name = 'post_edit.html'
     success_url = reverse_lazy('posts')
 
-class ArticleDelete(DeleteView):
+class ArticleDelete(LoginRequiredMixin, PermissionRequiredMixin,  DeleteView):
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('posts')
 
-class NewsCreate(PostCreate):
+class NewsCreate(LoginRequiredMixin, PostCreate):
+    permission_required = ('news.add_post',)
     post_type = 'NW'
 
-class NewsUpdate(UpdateView):
+class NewsUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    permission_required = ('news.change_post',)
     model = Post
     form_class = PostForm
     template_name = 'post_edit.html'
     success_url = reverse_lazy('posts')
 
-class NewsDelete(DeleteView):
+class NewsDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('posts')
@@ -82,3 +96,19 @@ class PostSearch(ListView):
         context['filterset'] = self.filterset
         return context
 
+
+class IndexView(LoginRequiredMixin, TemplateView):
+    template_name = 'account/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_author'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
+
+@login_required
+def upgrade_me(request):
+    user = request.user
+    premium_group = Group.objects.get(name='authors')
+    if not request.user.groups.filter(name='authors').exists():
+        premium_group.user_set.add(user)
+    return redirect('/')

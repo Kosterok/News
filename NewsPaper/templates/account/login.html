@@ -1,0 +1,45 @@
+{% extends 'flatpages/default.html' %}
+{% load socialaccount %}
+{% get_providers as socialaccount_providers %}
+{% block content %}
+<div>
+  <h2>Войти</h2>
+
+  <form method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <p>
+      {{ form.login.label_tag }}<br>
+      {{ form.login }}
+      {{ form.login.errors }}
+    </p>
+
+    <p>
+      {{ form.password.label_tag }}<br>
+      {{ form.password }}
+      {{ form.password.errors }}
+    </p>
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">Войти</button>
+  </form>
+
+  <hr>
+
+{% load socialaccount %}
+
+{% providers_media_js %}  {# js для провайдеров #}
+{% get_providers as socialaccount_providers %}
+
+<a href="{% provider_login_url 'yandex' process='login' %}" class="btn btn-danger">Войти через Яндекс</a>
+<a href="{% provider_login_url 'google' process='login' %}" class="btn btn-primary">Войти через Google</a>
+<hr>
+  <p>
+    Нет аккаунта? <a href="{% url 'account_signup' %}">Зарегистрироваться</a>
+  </p>
+</div>
+{% endblock %}

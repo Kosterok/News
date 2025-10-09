@@ -1,0 +1,51 @@
+{% extends 'flatpages/default.html' %}
+{% load socialaccount %}
+{% get_providers as socialaccount_providers %}
+{% block content %}
+<div>
+  <h2>Регистрация</h2>
+
+  <form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <p>
+      {{ form.username.label_tag }}<br>
+      {{ form.username }}
+      {{ form.username.errors }}
+    </p>
+
+    <p>
+      {{ form.email.label_tag }}<br>
+      {{ form.email }}
+      {{ form.email.errors }}
+    </p>
+
+    <p>
+      {{ form.password1.label_tag }}<br>
+      {{ form.password1 }}
+      {{ form.password1.errors }}
+    </p>
+
+    <p>
+      {{ form.password2.label_tag }}<br>
+      {{ form.password2 }}
+      {{ form.password2.errors }}
+    </p>
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+
+    <button type="submit" class="btn btn-success">Зарегистрироваться</button>
+  </form>
+
+  <hr>
+<a href="{% provider_login_url 'yandex' process='signup' %}" class="btn btn-danger">Войти через Яндекс</a>
+    <a href="{% provider_login_url 'google' process='signup' %}" class="btn btn-primary">Войти через Google</a>
+<hr>
+  <p>
+    Уже есть аккаунт? <a href="{% url 'account_login' %}">Войти</a>
+  </p>
+</div>
+{% endblock %}
