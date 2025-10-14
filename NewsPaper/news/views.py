@@ -1,5 +1,5 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+from .models import Post, Category, Author
 from .filters import PostFilter
 from .forms import PostForm
 from django.urls import reverse_lazy
@@ -10,6 +10,16 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import escape
+from django.utils.text import Truncator
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class PostTypeMixin:
     post_type = None
@@ -24,6 +34,10 @@ class PostsList(PostTypeMixin, ListView):
     template_name = 'posts.html'
     context_object_name = 'posts'
     paginate_by = 10
+
+    def get_queryset(self):
+        # важно вызывать super(), чтобы не сломать фильтрацию из PostTypeMixin
+        return super().get_queryset().prefetch_related('categories')
 
 class PostDetail(PostTypeMixin, DetailView):
     # Модель всё та же, но мы хотим получать информацию по отдельному товару
@@ -42,11 +56,19 @@ class PostCreate(PermissionRequiredMixin, CreateView):
 
     def form_valid(self, form):
         post = form.save(commit=False)
-        post.post_type = self.post_type
+        author, _ = Author.objects.get_or_create(user=self.request.user)
+        post.author = author
+        if self.post_type:
+            post.post_type = self.post_type
+        try:
+            post.full_clean()
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
         return super().form_valid(form)
 
 class ArticlesCreate(LoginRequiredMixin, PostCreate):
-
+    permission_required = ('news.add_post',)
     post_type = 'PS'
 
 class ArticleUpdate(LoginRequiredMixin,PermissionRequiredMixin, UpdateView):
@@ -112,3 +134,15 @@ def upgrade_me(request):
     if not request.user.groups.filter(name='authors').exists():
         premium_group.user_set.add(user)
     return redirect('/')
+
+
+@login_required
+def toggle_subscription(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    u = request.user
+    if request.method == "POST":
+        if category.subscribers.filter(id=u.id).exists():
+            category.subscribers.remove(u)
+        else:
+            category.subscribers.add(u)
+    return redirect(request.META.get("HTTP_REFERER") or "/")

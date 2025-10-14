@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <body>
+    <h1>{{ news.title }}</h1>
+    <p>{{ preview }}{% if news.text|length > 50 %}…{% endif %}</p>
+    <p>Здравствуй, username. Новая статья в твоём любимом разделе!</p>
+  </body>
+</html>

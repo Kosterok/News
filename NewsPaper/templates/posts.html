@@ -1,50 +1,70 @@
 {% extends 'flatpages/default.html' %}
 {% load censor %}
 {% load custom_tags %}
-{% block title %}
-Posts
-{% endblock title %}
+
+{% block title %}Новости{% endblock title %}
 
 {% block content %}
-   <h1>Все новости ({{paginator.count}})</h1>
-     <hr>
- <a href="/news/create" class = "btn btn-secondary">Добавить новость</a>
- <a href="/articles/create" class = "btn btn-secondary">Добавить статью</a>
-    <hr>
-   {% if posts %}
-          {% for post in posts %}
-            <h3>{{ post.get_post_type_display }} <br>{{post.title|censor}}</h3>
-            Дата публикации: {{post.created_at|date:'d.m.y'}}
-            <br>
-            {{post.text|truncatewords:50|censor }}
-            <br>
-            <br>
-           <a href="{{ post.get_absolute_url }}" class = "btn btn-primary">Читать полностью</a>
-            <hr>
-           {% endfor %}
+  <h1>Все новости ({{ paginator.count }})</h1>
+  <hr>
+  <a href="/news/create" class="btn btn-secondary">Добавить новость</a>
+  <a href="/articles/create" class="btn btn-secondary">Добавить статью</a>
+  <hr>
 
-   {% else %}
-       <h2>Новостей нет!</h2>
-   {% endif %}
-{# Добавляем пагинацию на страницу #}
+  {% if posts %}
+    {% for post in posts %}
+      <article class="mb-4">
+        <h3>
+          {{ post.get_post_type_display }}<br>
+          {{ post.title|censor }}
+        </h3>
 
-   {# Информация о предыдущих страницах #}
-   {% if page_obj.has_previous %}
-       <a href="?{% url_replace page=1 %}">1</a>
-       {% if page_obj.previous_page_number != 1 %}
-           ...
-           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
-       {% endif %}
-   {% endif %}
+        <h5>
+          {{ post.categories.first.name }}
+          {% with cat=post.categories.first %}
+  {% if cat %}
+    <form action="{% url 'toggle_sub' cat.pk %}" method="post" style="display:inline">
+      {% csrf_token %}
+      {% if user in cat.subscribers.all %}
+        <button type="submit" title="Отписаться">&#10006;</button>
+      {% else %}
+        <button type="submit" title="Подписаться">&#128276;</button>
+      {% endif %}
+    </form>
+  {% endif %}
+{% endwith %}
+        </h5>
 
-   {{ page_obj.number }}
+        <p class="text-muted">Дата публикации: {{ post.created_at|date:'d.m.y' }}</p>
 
-   {% if page_obj.has_next %}
-       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
-       {% if paginator.num_pages != page_obj.next_page_number %}
-           ...
-           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
-       {% endif %}
-   {% endif %}
+        <p>{{ post.text|truncatewords:50|censor }}</p>
 
+        <a href="{{ post.get_absolute_url }}" class="btn btn-primary">Читать полностью</a>
+        <hr>
+      </article>
+    {% endfor %}
+  {% else %}
+    <h2>Новостей нет!</h2>
+  {% endif %}
+
+  {# Пагинация #}
+  <nav aria-label="Навигация по страницам">
+    {% if page_obj.has_previous %}
+      <a href="?{% url_replace page=1 %}">1</a>
+      {% if page_obj.previous_page_number != 1 %}
+        …
+        <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+      {% endif %}
+    {% endif %}
+
+    <strong>{{ page_obj.number }}</strong>
+
+    {% if page_obj.has_next %}
+      <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+      {% if paginator.num_pages != page_obj.next_page_number %}
+        …
+        <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+      {% endif %}
+    {% endif %}
+  </nav>
 {% endblock content %}

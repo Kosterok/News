@@ -8,6 +8,7 @@ from .views import (PostsList, PostDetail, PostSearch,
 from .views import IndexView, upgrade_me
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
+from .views import PostCreate, toggle_subscription
 
 urlpatterns = [
     path('', PostsList.as_view(), name='posts'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('news/create/', NewsCreate.as_view(), name='news_create'),
     path('news/<int:pk>/edit/', NewsUpdate.as_view(), name='news_edit'),
     path('news/<int:pk>/delete/', NewsDelete.as_view(), name='news_delete'),
+    path("category/<int:pk>/subscribe/", toggle_subscription, name="toggle_sub"),
 
 
 ]

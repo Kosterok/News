@@ -4,6 +4,8 @@ from django.db.models import Sum
 from django.urls import reverse
 from allauth.account.forms import SignupForm
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -25,7 +27,10 @@ class Author(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
-
+    slug = models.SlugField(max_length=150, null=True, blank=True, db_index=True)
+    subscribers = models.ManyToManyField(
+        User, related_name="news_subscriptions", blank=True
+    )
     def __str__(self):
         return self.name
 
@@ -41,6 +46,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     text = models.TextField()
     rating = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     def like(self):
         self.rating += 1
@@ -58,6 +64,20 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('article_detail', args=[self.pk]) if self.post_type == self.POST \
                else reverse('news_detail', args=[self.pk])
+    def clean(self):
+        if self.post_type == self.NEWS and getattr(self, "author_id", None):
+            today = timezone.localdate()
+            cnt = Post.objects.filter(
+                author=self.author,
+                post_type=self.NEWS,
+                created_at__date=today,
+            ).exclude(pk=self.pk).count()
+            if cnt >= 3:
+                raise ValidationError('Лимит: не более 3 новостей в сутки.')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 class PostCategory(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
