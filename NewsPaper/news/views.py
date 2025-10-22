@@ -36,15 +36,11 @@ class PostsList(PostTypeMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        # важно вызывать super(), чтобы не сломать фильтрацию из PostTypeMixin
         return super().get_queryset().prefetch_related('categories')
 
 class PostDetail(PostTypeMixin, DetailView):
-    # Модель всё та же, но мы хотим получать информацию по отдельному товару
     model = Post
-    # Используем другой шаблон — product.html
     template_name = 'post.html'
-    # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'post'
 
 class PostCreate(PermissionRequiredMixin, CreateView):

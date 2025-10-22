@@ -6,8 +6,7 @@
     <li>
         <a href="{{ site_url }}{{ post.get_absolute_url }}">
             {{ post.title }}
-        </a>
-        <br>
+        </a><br>
         <small>{{ post.created_at|date:"d.m.Y H:i" }}</small>
     </li>
 {% empty %}

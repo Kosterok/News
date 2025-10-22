@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'django_filters',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.yandex',
+    "django_celery_beat",
+    "django_celery_results",
 
 ]
 
@@ -139,3 +141,11 @@ EMAIL_HOST_PASSWORD = 'tfmycqduypzafqqs'
 EMAIL_USE_SSL = True
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_TIMEOUT = 10
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_RESULT_EXTENDED = True

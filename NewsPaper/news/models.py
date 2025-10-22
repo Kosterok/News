@@ -6,6 +6,7 @@ from allauth.account.forms import SignupForm
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -33,6 +34,13 @@ class Category(models.Model):
     )
     def __str__(self):
         return self.name
+
+class Subscription(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="subscriptions")
+
+    class Meta:
+        unique_together = ("user", "category")
 
 class Post(models.Model):
     POST = 'PS'
@@ -72,7 +80,7 @@ class Post(models.Model):
                 post_type=self.NEWS,
                 created_at__date=today,
             ).exclude(pk=self.pk).count()
-            if cnt >= 3:
+            if cnt >= 10:
                 raise ValidationError('Лимит: не более 3 новостей в сутки.')
 
     def save(self, *args, **kwargs):
