@@ -8,8 +8,7 @@ from datetime import timedelta
 from collections import defaultdict
 from django.urls import reverse
 
-
-#Рассылка сразу после создания новости ==========
+#Рассылка сразу после создания новости
 @shared_task(bind=True)
 def send_post_created_notifications(self, post_id: int):
 
@@ -23,11 +22,8 @@ def send_post_created_notifications(self, post_id: int):
     categories = post.categories.all()
     if not categories.exists():
         return f"У поста {post_id} нет категорий"
-
-    # собираем email подписчиков без дубликатов
     subscribers_emails = set()
     for category in categories:
-        # предполагается: Category.subscribers = ManyToManyField(User)
         for user in category.subscribers.all():
             if user.email:
                 subscribers_emails.add(user.email)
