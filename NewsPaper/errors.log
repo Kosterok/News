@@ -1,0 +1,26 @@
+2025-10-23 14:49:43,326 [ERROR] C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\utils\log.py — Internal Server Error: /test-error/
+Traceback (most recent call last):
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\NewsPaper\news\views.py", line 172, in test_error
+    1 / 0
+    ~~^~~
+ZeroDivisionError: division by zero
+2025-10-23 14:49:43,888 [ERROR] C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\servers\basehttp.py — "GET /test-error/ HTTP/1.1" 500 145
+2025-10-23 14:52:49,721 [ERROR] C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\utils\log.py — Internal Server Error: /test-error/
+Traceback (most recent call last):
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\Desktop\Python\NewsPortal\NewsPaper\news\views.py", line 172, in test_error
+    1 / 0
+    ~~^~~
+ZeroDivisionError: division by zero
+2025-10-23 14:52:53,527 [ERROR] C:\Users\Admin\Desktop\Python\NewsPortal\.venv\Lib\site-packages\django\core\servers\basehttp.py — "GET /test-error/ HTTP/1.1" 500 145
