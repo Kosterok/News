@@ -1,5 +1,6 @@
-
-<!DOCTYPE html>
+{% load static %}
+{% load cache %}
+<html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -20,6 +21,7 @@
     </head>
     <body>
         <!-- Responsive navbar-->
+        {% cache 600 navbar_block %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
                 <a class="navbar-brand" href="/">Новости</a>
@@ -33,6 +35,7 @@
                 </div>
             </div>
         </nav>
+        {% endcache %}
     <div class="container">
    <div class="row">
        <div class="col-lg-12 text-center">
@@ -42,5 +45,10 @@
        </div>
    </div>
 </div>
+    {% cache 600 footer_block %}
+    <footer class="text-center py-3 bg-light mt-4">
+      <small>© {{ now|date:"Y" }} News Portal. Все права защищены.</small>
+    </footer>
+    {% endcache %}
     </body>
 </html>

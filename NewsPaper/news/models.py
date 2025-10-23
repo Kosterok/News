@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.conf import settings
+from django.core.cache import cache
 
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -85,7 +86,9 @@ class Post(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        return super().save(*args, **kwargs)
+        saved = super().save(*args, **kwargs)
+        cache.delete(f'post-{self.pk}')
+        return saved
 
 class PostCategory(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

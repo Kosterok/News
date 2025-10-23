@@ -20,6 +20,18 @@ from django.utils.html import escape
 from django.utils.text import Truncator
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.generic import DetailView
+from django.core.cache import cache
+from .models import Post
+from django.http import HttpResponse
+
+
+
+@cache_page(60)
+def index(request):
+    ...
 
 class PostTypeMixin:
     post_type = None
@@ -28,6 +40,7 @@ class PostTypeMixin:
         qs = super().get_queryset()
         return qs.filter(post_type=self.post_type) if self.post_type else qs
 
+@method_decorator(cache_page(60), name='dispatch')
 class PostsList(PostTypeMixin, ListView):
     model = Post
     ordering = '-created_at'
@@ -38,10 +51,22 @@ class PostsList(PostTypeMixin, ListView):
     def get_queryset(self):
         return super().get_queryset().prefetch_related('categories')
 
+@method_decorator(cache_page(300), name='dispatch')
 class PostDetail(PostTypeMixin, DetailView):
     model = Post
     template_name = 'post.html'
     context_object_name = 'post'
+
+    def get_object(self, *args, **kwargs):
+        post_id = self.kwargs.get('pk')
+
+        post = cache.get(f'post-{post_id}')
+
+        if not post:
+            post = super().get_object(queryset=self.get_queryset())
+            cache.set(f'post-{post_id}', post)
+
+        return post
 
 class PostCreate(PermissionRequiredMixin, CreateView):
     permission_required = ('news.add_post',)
@@ -142,3 +167,7 @@ def toggle_subscription(request, pk):
         else:
             category.subscribers.add(u)
     return redirect(request.META.get("HTTP_REFERER") or "/")
+
+def test_error(request):
+    1 / 0
+    return HttpResponse("ok")

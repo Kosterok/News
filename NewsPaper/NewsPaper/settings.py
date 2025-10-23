@@ -1,10 +1,12 @@
 from pathlib import Path
+import os
+from django.utils.log import RequireDebugTrue, RequireDebugFalse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-m73lndhhhq4c_evb0c-vaa$$l2gl__be(3__ehx=sjrk4(t1pu'
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
@@ -133,6 +135,7 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
+ADMINS = [('Admin', 'kb@emsoft.ru')]
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'kb@emsoft.ru'
@@ -149,3 +152,138 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_RESULT_EXTENDED = True
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'cache_data',  # папка для кэша
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'filters': {
+        'require_debug_true': {
+            '()': RequireDebugTrue,
+        },
+        'require_debug_false': {
+            '()': RequireDebugFalse,
+        },
+    },
+
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s [%(levelname)s] %(message)s'
+        },
+        'warning': {
+            'format': '%(asctime)s [%(levelname)s] %(pathname)s — %(message)s'
+        },
+        'error': {
+            'format': '%(asctime)s [%(levelname)s] %(pathname)s — %(message)s',
+        },
+        'file_general': {
+            'format': '%(asctime)s [%(levelname)s] %(module)s — %(message)s'
+        },
+        'file_errors': {
+            'format': '%(asctime)s [%(levelname)s] %(pathname)s — %(message)s'
+        },
+        'file_security': {
+            'format': '%(asctime)s [%(levelname)s] %(module)s — %(message)s'
+        },
+    },
+
+    'handlers': {
+        # Консоль — только при DEBUG=True
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'console_warning': {
+            'level': 'WARNING',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'warning',
+        },
+        'console_error': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'error',
+        },
+
+        # Файл general.log — только при DEBUG=False
+        'general_file': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'general.log'),
+            'formatter': 'file_general',
+        },
+
+        # Файл errors.log
+        'errors_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'errors.log'),
+            'formatter': 'file_errors',
+        },
+
+        # Файл security.log
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'security.log'),
+            'formatter': 'file_security',
+        },
+
+        # Почта для ошибок
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'file_errors',
+        },
+    },
+
+    'loggers': {
+        # Основной логгер Django
+        'django': {
+            'handlers': ['console', 'console_warning', 'console_error', 'general_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+
+        # Ошибки приложений Django
+        'django.request': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # Безопасность
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
